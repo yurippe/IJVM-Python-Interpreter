@@ -331,89 +331,17 @@ class IJVM(object):
     def print_result(self):
         print "return value: " + str(self.stack[self.sp])
 
-################
-#Interpreter####
-################
-class IJVMInterpreter(IJVM):
 
-    def __init__(self):
-
-        def addLocals(interp):
-            linkptr = interp.stack.stack[self.lv]
-            linkptr += 1
-            interp.stack.stack[self.lv] = linkptr
-            interp.stack.stack = interp.stack.stack[:1] + [570] + interp.stack.stack[1:]
-            interp.sp = interp.sp + 1
-            return Operation("addlocal")
-        
-        self.customOpCodes = {0xEF: addLocals}
-        self.customOpKeywords = {"ADDLOCAL":0xEF}
-        self.stack = Stack()
-        self.cpp = ConstantPool()
-        self.method = MethodArea()
-
-        #Set it to be 0 arguments 0 locals and a NOP, Add some more nops, so we have an empty buffer
-        self.method.setMethodArea([0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
-        self.cpp.setConstantPool([0x00])
-        self.stack.setStack([])
-        
-        self.sp = self.stack.getSize() - 1          
-        self.lv = 0                 
-        self.pc = INITIAL_PC
-        self.wide = False
-
-        self.initial_sp = self.sp;
-
-        self.push(INITIAL_OBJ_REF)
-
-        
-        self.invoke_virtual(0)
-
-    def fetchByte(self, signed=False):
-        b = self.method[self.pc]
-        self.pc = self.pc + 1
-        return b
-
-    def fetchWord(self, signed=False):
-        return self.fetchByte(signed)
-            
-    def start(self):
-        operCount = 0
-        print str(Operation("Initial Stack")) + "\tstack = " + ", ".join(self.stack.getStack())
-        print "----"
-        while self.active():
-            oldpc = self.pc
-            inp = raw_input(">>")
-            inp = inp.split(" ")
-            if inp[0].upper() in KEYWORDS.keys():
-                self.method.methodarea[self.pc] = KEYWORDS[inp[0].upper()]
-                for i in range(len(inp) - 1):
-                    self.method.methodarea[self.pc + i + 1] = int(inp[i+1])
-            elif inp[0].upper() in self.customOpKeywords.keys():
-                self.method.methodarea[self.pc] = self.customOpKeywords[inp[0].upper()]
-                for i in range(len(inp) - 1):
-                    self.method.methodarea[self.pc + i + 1] = int(inp[i+1])
-            else:
-                self.method.methodarea[self.pc] = 0x00 #NOP
-                
-            executedOperation = self.execute_opcode()
-            print str(executedOperation) + "\tstack = " + ", ".join(self.stack.getStack())
-            operCount += 1
-
-            self.pc = oldpc
-
-        self.print_result()
-        print "Operations count: " + str(operCount)
 
 if __name__ == "__main__":
 
     image = IJVMImage()
 
     #adds 2 arguments + 8
-    #image.method_area = ['0x00', '0x03', '0x00', '0x00', '0x15', '0x01', '0x15', '0x02', '0x10', '0x08', '0x60', '0x60', '0xac', '0x00', '0x03', '0x00', '0x00', '0x15', '0x01', '0x15', '0x02', '0x60', '0x10', '0x08', '0x60', '0xac', '0x00', '0x03', '0x00', '0x00', '0x15', '0x01', '0x15', '0x02', '0xb6', '0x00', '0x00', '0xac']
-    #image.constant_pool = [0x00, 0x0d, 0x1a]
-    #image.main_index = 2
-    #image.args = [7,5]
+    image.method_area = ['0x00', '0x03', '0x00', '0x00', '0x15', '0x01', '0x15', '0x02', '0x10', '0x08', '0x60', '0x60', '0xac', '0x00', '0x03', '0x00', '0x00', '0x15', '0x01', '0x15', '0x02', '0x60', '0x10', '0x08', '0x60', '0xac', '0x00', '0x03', '0x00', '0x00', '0x15', '0x01', '0x15', '0x02', '0xb6', '0x00', '0x00', '0xac']
+    image.constant_pool = [0x00, 0x0d, 0x1a]
+    image.main_index = 2
+    image.args = [7,5]
 
     #image.method_area = ['0x00', '0x01', '0x00', '0x03', '0x10', '0x05', '0x36', '0x02', '0x10', '0xf9', '0x36', '0x03', '0x15', '0x02', '0x15', '0x03', '0x60', '0x36', '0x01', '0x15', '0x01', '0x10', '0x03', '0x9f', '0x00', '0x0d', '0x15', '0x02', '0x10', '0x01', '0x64', '0x36', '0x02', '0xa7', '0x00', '0x07', '0x10', '0x00', '0x36', '0x03', '0x10', '0x00', '0xac']
     #image.constant_pool = [0x00]
@@ -425,24 +353,8 @@ if __name__ == "__main__":
     #image.main_index = 0
     #image.args = [1, 99999999999]
     
-    #Test new leet opcode: #code is:.method main .args 1 leet iadd iadd ireturn #expect result 13 + 37 + 1337 = 1387
-    def testopcode(IJVMinstance):
-        IJVMinstance.push(1337)
-        IJVMinstance.push(37)
-        IJVMinstance.push(13)
-        return Operation("leet")
-    image.method_area = [0x00, 0x01, 0x00, 0x00, 0xee, 0x60, 0x60, 0xac]
-    image.constant_pool = [0]
-    image.main_index = 0
     
 
     ijvm = IJVM(image)
-
-    #add leet opcode
-    ijvm.addCustomOPCode(0xEE, testopcode)
-
     ijvm.start()
-
-    ijvmi = IJVMInterpreter()
-    ijvmi.start()
 
