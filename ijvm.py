@@ -80,7 +80,7 @@ class IJVM(object):
     
     def __init__(self, image):
         self.image = image
-
+        self.customOpCodes = {}
         self.stack = Stack()
         self.cpp = ConstantPool()
         self.method = MethodArea()
@@ -106,6 +106,9 @@ class IJVM(object):
             self.push(arg)
         
         self.invoke_virtual(self.image.getMainIndex())
+
+    def addCustomOPCode(self, code, func):
+        self.customOpCodes[code] = func
         
     def start(self):
         operCount = 0
@@ -306,6 +309,9 @@ class IJVM(object):
             self.wide = True
             operation = Operation("wide")
 
+        else:
+            if opcode in self.customOpCodes.keys():
+                operation = self.customOpCodes[opcode](self)
             
         if not opcode == OPCODE_WIDE:
             self.wide = False
@@ -323,27 +329,38 @@ class IJVM(object):
 if __name__ == "__main__":
 
     image = IJVMImage()
-    
+
+    #adds 2 arguments + 8
     #image.method_area = ['0x00', '0x03', '0x00', '0x00', '0x15', '0x01', '0x15', '0x02', '0x10', '0x08', '0x60', '0x60', '0xac', '0x00', '0x03', '0x00', '0x00', '0x15', '0x01', '0x15', '0x02', '0x60', '0x10', '0x08', '0x60', '0xac', '0x00', '0x03', '0x00', '0x00', '0x15', '0x01', '0x15', '0x02', '0xb6', '0x00', '0x00', '0xac']
     #image.constant_pool = [0x00, 0x0d, 0x1a]
     #image.main_index = 2
     #image.args = [7,5]
 
-    image.method_area = ['0x00', '0x01', '0x00', '0x03', '0x10', '0x05', '0x36', '0x02', '0x10', '0xf9', '0x36', '0x03', '0x15', '0x02', '0x15', '0x03', '0x60', '0x36', '0x01', '0x15', '0x01', '0x10', '0x03', '0x9f', '0x00', '0x0d', '0x15', '0x02', '0x10', '0x01', '0x64', '0x36', '0x02', '0xa7', '0x00', '0x07', '0x10', '0x00', '0x36', '0x03', '0x10', '0x00', '0xac']
-    image.constant_pool = [0x00]
+    #image.method_area = ['0x00', '0x01', '0x00', '0x03', '0x10', '0x05', '0x36', '0x02', '0x10', '0xf9', '0x36', '0x03', '0x15', '0x02', '0x15', '0x03', '0x60', '0x36', '0x01', '0x15', '0x01', '0x10', '0x03', '0x9f', '0x00', '0x0d', '0x15', '0x02', '0x10', '0x01', '0x64', '0x36', '0x02', '0xa7', '0x00', '0x07', '0x10', '0x00', '0x36', '0x03', '0x10', '0x00', '0xac']
+    #image.constant_pool = [0x00]
+    #image.main_index = 0
+
+    #add 2 arguments together
+    #image.method_area = ['0x00', '0x03', '0x00', '0x00', '0x15', '0x01', '0x15', '0x02', '0x60', '0xac']
+    #image.constant_pool = [0x00]
+    #image.main_index = 0
+    #image.args = [1, 99999999999]
+    
+    #Test new leet opcode: #code is:.method main .args 1 leet iadd iadd ireturn #expect result 13 + 37 + 1337 = 1387
+    def testopcode(IJVMinstance):
+        IJVMinstance.push(1337)
+        IJVMinstance.push(37)
+        IJVMinstance.push(13)
+        return Operation("leet")
+    image.method_area = [0x00, 0x01, 0x00, 0x00, 0xee, 0x60, 0x60, 0xac]
+    image.constant_pool = [0]
     image.main_index = 0
     
-    #i = 0
-    #tmp = []
-    #print "Method area"
-    #for x in image.method_area:
-    #    tmp.append(str(i) + ": " + x)
-    #    i += 1
-    #print tmp
-    #print "Constant pool"
-    #print image.constant_pool
 
     ijvm = IJVM(image)
+
+    #add leet opcode
+    ijvm.addCustomOPCode(0xEE, testopcode)
 
     ijvm.start()
 
