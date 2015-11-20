@@ -23,6 +23,59 @@ OPCODE_POP = 0x57
 OPCODE_SWAP = 0x5F
 OPCODE_WIDE = 0xC4
 
+class Operation(object):
+
+    def __init__(self, name):
+        self.name = name
+        self.operations = []#list of bytes
+        self.voperations = []
+        self.description = ""
+        self.opcode = ""
+
+        self.str_format = "{0:<9}\t\t{1:<9}"
+
+    def setFormat(self, f):
+        self.str_format = f
+        return self
+        
+    def addByte(self, b, signed=False):
+        if signed:
+            pass
+        bait = str(hex(b))[2:]
+        while len(bait) < 2:
+            bait = "0" + bait
+        self.operations += [bait[i:i+2] for i in range(0, len(bait), 2)]
+        self.voperations.append(str(b))
+        return self #allows for method chaining, so very pythonic
+        
+    def addWord(self, w, signed=False):
+        if signed:
+            pass
+        word = str(hex(w))[2:]
+        while len(word) < 4:
+            word = "0" + word
+        self.operations += [word[i:i+2] for i in range(0, len(word), 2)]
+        self.voperations.append(str(w))
+        return self #allows for method chaining, so very pythonic
+
+    def setDescription(self, txt):
+        self.description = txt
+        return self
+
+    def setOpCode(self, code):
+        opc = str(hex(code))[2:]
+        while len(opc) < 2:
+            opc = "0" + opc
+        self.opcode = str(opc)
+        return self
+
+    def __str__(self):
+        if len(self.operations) > 0 or not self.opcode == "": lside = "["; rside = "]"
+        else: lside = ""; rside = ""
+        return self.str_format.format(self.name + " " + " ".join(self.voperations),
+               lside + " ".join([self.opcode] + self.operations) + rside)                   
+
+    
 class Method_Area(object):
 
     def __init__(self):

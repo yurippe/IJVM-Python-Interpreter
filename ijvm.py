@@ -7,6 +7,12 @@ class Stack(object):
     def setStack(self, l):
         self.stack = l
 
+    def getStack(self, asString=True):
+        if asString:
+            return [str(element) for element in self.stack[::-1]]
+        else:
+            return [element for element in self.stack[::-1]]
+
     def getSize(self):
         return len(self.stack)
 
@@ -68,7 +74,7 @@ class MethodArea(object):
         else: return self.methodarea[int(key, base=16)]
 
 
-        
+
 
 class IJVM(object):
     
@@ -102,18 +108,16 @@ class IJVM(object):
         self.invoke_virtual(self.image.getMainIndex())
         
     def start(self):
-        print "Stack: " + str(self.stack.stack)
+        print str(Operation("Initial Stack")) + "\tstack = " + ", ".join(self.stack.getStack())
+        print "----"
         while self.active():
-            self.execute_opcode()
-            tmp = [str(x) for x in self.stack.stack]
-            try:
-                tmp[self.sp] = "SP->" + tmp[self.sp]
-                tmp[self.lv] = "LV->" + tmp[self.lv]
-            except: pass
-            print "-----------"
-            print "Stack: " + str(self.stack.stack[::-1])
-            print tmp[::-1]
-            print "-----------"
+            executedOperation = self.execute_opcode()
+            #tmp = [str(x) for x in self.stack.stack]
+            #try:
+            #    tmp[self.sp] = "SP->" + tmp[self.sp]
+            #    tmp[self.lv] = "LV->" + tmp[self.lv]
+            #except: pass
+            print str(executedOperation) + "\tstack = " + ", ".join(self.stack.getStack())
 
         self.print_result()
 
@@ -181,40 +185,47 @@ class IJVM(object):
         opc = self.pc
         opcode = self.fetchByte()
 
-        print "PC:" + str(opc) + "; OPCODE: [" + str(hex(opcode)) + "]"
-
+        operation = Operation("?")
 
         if opcode == OPCODE_BIPUSH:
-            self.push(self.fetchByte(signed=True))
-            
+            a = self.fetchByte(signed=True)
+            self.push(a)
+            operation = Operation("bipush").addByte(a, signed=True)
+
         elif opcode == OPCODE_DUP:
             self.push(self.stack[self.sp])
+            operation = Operation("dup")
             
         elif opcode == OPCODE_GOTO:
             offset = self.fetchWord(signed=True)
             self.pc = opc + offset
+            operation = Operation("goto").addWord(offset, signed=True)
             
         elif opcode == OPCODE_IADD:
             a = self.pop()
             b = self.pop()
             self.push(a+b)
+            operation = Operation("iadd")
 
         elif opcode == OPCODE_IAND:
             a = self.pop()
             b = self.pop()
             self.push(int(a and b))
+            operation = Operation("iand")
 
         elif opcode == OPCODE_IFEQ:
             offset = self.fetchWord(signed=True)
             a = self.pop()
             if(a == 0):
                 self.pc = opc + offset
+            operation = Operation("ifeq").addWord(offset, signed=True)
                 
         elif opcode == OPCODE_IFLT:
             offset = self.fetchWord(signed=True)
             a = self.pop()
             if(a < 0):
                 self.pc = opc + offset
+            operation = Operation("iflt").addWord(offset, signed=True)
 
         elif opcode == OPCODE_IF_ICMPEQ:
             offset = self.fetchWord(signed=True)
@@ -222,36 +233,49 @@ class IJVM(object):
             b = self.pop()
             if(a == b):
                 self.pc = opc + offset
+            operation = Operation("if_icmpeq").addWord(offset, signed=True)
 
         elif opcode == OPCODE_IINC:
             varnum = self.fetchByte()
             a = self.fetchByte(signed=True)
             self.stack[self.lv + varnum] += a
-
+            operation = Operation("iinc").addByte(varnum).addByte(a, signed=True)
+            
         elif opcode == OPCODE_ILOAD:
+            operation = Operation("iload") #Slightly different order, because it is conditional
             if (self.wide):
                 varnum = self.fetchWord()
+                operation.addWord(varnum)
             else:
                 varnum = self.fetchByte()
+                operation.addByte(varnum)
+                
             self.push(self.stack[self.lv + varnum])
+            
 
         elif opcode == OPCODE_INVOKEVIRTUAL:
             index = self.fetchWord()
             self.invoke_virtual(index)
+            operation = Operation("invokevirtual").addWord(index)
 
         elif opcode == OPCODE_IOR:
             a = self.pop()
             b = self.pop()
             self.push(a or b)
+            operation = Operation("ior")
 
         elif opcode == OPCODE_IRETURN:
             self.ireturn()
+            operation = Operation("ireturn")
 
         elif opcode == OPCODE_ISTORE:
+            operation = Operation("istore") #Different order because it is conditional
             if(self.wide):
                 varnum = self.fetchWord()
+                operation.addWord(varnum)
             else:
                 varnum = self.fetchByte()
+                operation.addByte(varnum)
             a = self.pop()
             self.stack[self.lv + varnum] = a
 
@@ -259,29 +283,37 @@ class IJVM(object):
             a = self.pop()
             b = self.pop()
             self.push(b - a)
+            operation = Operation("isub")
 
         elif opcode == OPCODE_LDC_W:
             index = self.fetchWord()
             self.push(self.cpp[index])
+            operation = Operation("ldc_w").addWord(index)
 
         elif opcode == OPCODE_NOP:
-            pass
+            operation = Operation("nop")
         
         elif opcode == OPCODE_POP:
             self.pop()
+            operation = Operation("pop")
 
         elif opcode == OPCODE_SWAP:
             a = self.stack[self.sp]
             self.stack[self.sp] = self.stack[self.sp - 1]
             self.stack[self.sp - 1] = a
+            operation = Operation("swap")
 
         elif opcode == OPCODE_WIDE:
             self.wide = True
+            operation = Operation("wide")
 
             
         if not opcode == OPCODE_WIDE:
             self.wide = False
-            
+
+        operation.setOpCode(opcode)
+        return operation
+    
     def active(self):
         return not self.pc == INITIAL_PC
 
@@ -298,15 +330,16 @@ if __name__ == "__main__":
     image.main_index = 2
     image.args = [7,5]
     
-    i = 0
-    tmp = []
-    print "Method area"
-    for x in image.method_area:
-        tmp.append(str(i) + ": " + x)
-        i += 1
-    print tmp
-    print "Constant pool"
-    print image.constant_pool
+    #i = 0
+    #tmp = []
+    #print "Method area"
+    #for x in image.method_area:
+    #    tmp.append(str(i) + ": " + x)
+    #    i += 1
+    #print tmp
+    #print "Constant pool"
+    #print image.constant_pool
+
     ijvm = IJVM(image)
 
     ijvm.start()
