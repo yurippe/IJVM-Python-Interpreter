@@ -17,14 +17,7 @@ class Stack(object):
         self.stack.append(w)
 
     def __getitem__(self, key):
-        try:
-            return self.stack[key]
-        except Exception as e:
-            print e
-            print key
-            print "---"
-            print self.stack
-            raise e
+        return self.stack[key]
 
     def __setitem__(self, key, value):
         key = int(key)
