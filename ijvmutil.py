@@ -39,8 +39,8 @@ class Operation(object):
         return self
         
     def addByte(self, b, signed=False):
-        if signed:
-            pass
+        if signed and b < 0:
+            b = b + 256
         bait = str(hex(b))[2:]
         while len(bait) < 2:
             bait = "0" + bait
@@ -49,8 +49,8 @@ class Operation(object):
         return self #allows for method chaining, so very pythonic
         
     def addWord(self, w, signed=False):
-        if signed:
-            pass
+        if signed and w < 0:
+            w = w + 65536
         word = str(hex(w))[2:]
         while len(word) < 4:
             word = "0" + word

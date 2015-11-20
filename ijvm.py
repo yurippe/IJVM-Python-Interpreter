@@ -112,11 +112,6 @@ class IJVM(object):
         print "----"
         while self.active():
             executedOperation = self.execute_opcode()
-            #tmp = [str(x) for x in self.stack.stack]
-            #try:
-            #    tmp[self.sp] = "SP->" + tmp[self.sp]
-            #    tmp[self.lv] = "LV->" + tmp[self.lv]
-            #except: pass
             print str(executedOperation) + "\tstack = " + ", ".join(self.stack.getStack())
 
         self.print_result()
@@ -126,7 +121,7 @@ class IJVM(object):
         self.pc = self.pc + 1
 
         if signed and b > 127:
-            b = (256 - b) * (-1)
+            b = (b - 256)
             
         return b
 
@@ -135,7 +130,7 @@ class IJVM(object):
         self.pc = self.pc + 2
 
         if signed and word > 32767:
-            word = (65536 - word) * (-1)
+            word = (word - 65536)
 
         return word
 
