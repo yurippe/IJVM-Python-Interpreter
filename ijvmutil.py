@@ -39,23 +39,25 @@ class Operation(object):
         return self
         
     def addByte(self, b, signed=False):
+        vb = b
         if signed and b < 0:
             b = b + 256
         bait = str(hex(b))[2:]
         while len(bait) < 2:
             bait = "0" + bait
         self.operations += [bait[i:i+2] for i in range(0, len(bait), 2)]
-        self.voperations.append(str(b))
+        self.voperations.append(str(vb))
         return self #allows for method chaining, so very pythonic
         
     def addWord(self, w, signed=False):
+        vw = w
         if signed and w < 0:
             w = w + 65536
         word = str(hex(w))[2:]
         while len(word) < 4:
             word = "0" + word
         self.operations += [word[i:i+2] for i in range(0, len(word), 2)]
-        self.voperations.append(str(w))
+        self.voperations.append(str(vw))
         return self #allows for method chaining, so very pythonic
 
     def setDescription(self, txt):
