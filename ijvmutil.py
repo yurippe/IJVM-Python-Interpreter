@@ -48,6 +48,7 @@ class IJVMImage(object):
         self.method_area_size = self.method_area.getSize()
         self.constant_pool = Constant_Pool()
         self.constant_pool_size = self.constant_pool.getSize()
+        self.args = []
 
     def getMainIndex(self):
         return self.main_index
@@ -56,3 +57,5 @@ class IJVMImage(object):
         return self.method_area
     def getConstantPool(self):
         return self.constant_pool
+    def getArguments(self):
+        return self.args
