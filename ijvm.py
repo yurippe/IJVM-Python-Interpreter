@@ -13,6 +13,9 @@ class Stack(object):
     def pop(self, sp):
         self.stack.pop()
 
+    def cuttop(self, index):
+        self.stack = self.stack[:index+1]
+
     def silentpush(self, w):
         self.stack.append(w)
 
@@ -169,6 +172,7 @@ class IJVM(object):
         self.sp = self.lv
         self.pc = self.stack[linkptr]
         self.lv = self.stack[linkptr + 1]
+        self.stack.cuttop(self.sp)
 
     def execute_opcode(self):
 
@@ -246,7 +250,8 @@ class IJVM(object):
                 varnum = self.fetchWord()
             else:
                 varnum = self.fetchByte()
-            self.stack[self.lv + varnum] = self.pop()
+            a = self.pop()
+            self.stack[self.lv + varnum] = a
 
         elif opcode == OPCODE_ISUB:
             a = self.pop()
