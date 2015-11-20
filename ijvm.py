@@ -13,8 +13,18 @@ class Stack(object):
     def pop(self, sp):
         self.stack.pop()
 
+    def silentpush(self, w):
+        self.stack.append(w)
+
     def __getitem__(self, key):
-        return self.stack[key]
+        try:
+            return self.stack[key]
+        except Exception as e:
+            print e
+            print key
+            print "---"
+            print self.stack
+            raise e
 
     def __setitem__(self, key, value):
         key = int(key)
@@ -103,8 +113,8 @@ class IJVM(object):
                 tmp[self.lv] = "LV->" + tmp[self.lv]
             except: pass
             print "-----------"
-            print "Stack: " + str(self.stack.stack)
-            print tmp
+            print "Stack: " + str(self.stack.stack[::-1])
+            print tmp[::-1]
             print "-----------"
 
         self.print_result()
@@ -131,6 +141,9 @@ class IJVM(object):
         self.sp = self.sp + 1;
         self.stack[self.sp] = word
 
+    def silentpush(self, word):
+        self.stack.silentpush(word)
+
     def pop(self):
         result = self.stack[self.sp]
         self.stack.pop(self.sp)
@@ -145,7 +158,12 @@ class IJVM(object):
         address = self.cpp[index]
         nargs = self.method[address] * 256 + self.method[address + 1]
         nlocals = self.method[address + 2] * 256 + self.method[address + 3]
-        self.sp = self.sp + nlocals
+        #self.sp = self.sp + nlocals #<-Instead of this
+
+        #We initialize the local variables to 0
+        for x in range(nlocals):
+            self.push(0)
+            
         self.push(self.pc)
         self.push(self.lv)
         self.lv = self.sp - nargs - nlocals - 1
@@ -235,7 +253,7 @@ class IJVM(object):
                 varnum = self.fetchWord()
             else:
                 varnum = self.fetchByte()
-            self.stack[self.lv +varnum] = self.pop()
+            self.stack[self.lv + varnum] = self.pop()
 
         elif opcode == OPCODE_ISUB:
             a = self.pop()
