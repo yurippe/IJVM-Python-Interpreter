@@ -65,7 +65,6 @@ class MethodArea(object):
                 self.methodarea.append(int(li, base=16))
             elif type(li) == int:
                 self.methodarea.append(li)
-        #self.methodarea = l
 
     def getSize(self):
         return len(self.methodarea)
@@ -103,6 +102,14 @@ class IJVM(object):
 
         self.initial_sp = self.sp;
 
+        ##Check how many arguments the main method takes
+        address = self.cpp[self.image.getMainIndex()]
+        nargs = self.method[address] * 256 + self.method[address + 1]
+        ##Raise an error if the number supplied does not correspond
+        if not len(self.image.getArguments()) == nargs - 1:
+            raise IJVMError("Wrong number of arguments (main takes exactly " +
+                            str(nargs - 1) + " arguments)")
+        
         #Set everything up
         self.push(INITIAL_OBJ_REF)
         #Push all arguments here
@@ -375,9 +382,17 @@ if __name__ == "__main__":
         ijvm.start()
 
         x = raw_input("Press enter to exit...")
+    except IJVMException as e:
+        print "------------------------------"
+        print "IJVM Error:"
+        print "------------------------------"
+        print e
+        print "------------------------------"
+        x = raw_input("Press enter to exit...")
     except Exception as e:
         print "------------------------------"
-        print "An error occured"
+        print "An error occured with python,"
+        print "Please report this!"
         print "------------------------------"
         print e
         x = raw_input("Press enter to exit...")
