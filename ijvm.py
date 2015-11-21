@@ -1,3 +1,4 @@
+import sys
 from ijvmutil import *
 
 class Stack(object):
@@ -117,17 +118,35 @@ class IJVM(object):
         self.customOpKeywords[str(s).upper()] = code
         
     def start(self):
+        p_format = "{0} \tstack {1:>5} = {2}"
+
+        #Print header
+        header_format = "{0} \t       {1} \t {2}"
+        header_op = Operation("Operation")
+        header_op.opcode = "OPCode"
+        print "---------------------------------------------------------------------------"
+        print header_format.format(str(header_op), "Size", "Stack")
+        print "---------------------------------------------------------------------------"
+        #
+        
         operCount = 0
-        print str(Operation("Initial Stack")) + "\tstack = " + ", ".join(self.stack.getStack())
+        largestStackSize = self.stack.getSize()
+        
+        print p_format.format(str(Operation("Initial Stack")), "[" + str(self.stack.getSize()) + "]", ", ".join(self.stack.getStack()))
         print "----"
+        print ""
         while self.active():
             executedOperation = self.execute_opcode()
-            print str(executedOperation) + "\tstack = " + ", ".join(self.stack.getStack())
+            stackSize = self.stack.getSize()
+            if stackSize > largestStackSize: largestStackSize = stackSize
+            print p_format.format(str(executedOperation), "[" + str(stackSize) + "]", ", ".join(self.stack.getStack()))
             operCount += 1
 
         self.print_result()
-        print "Operations count: " + str(operCount)
-
+        print ""
+        print "Operations count: \t" + str(operCount)
+        print "Largest stack size: \t" + str(largestStackSize)
+        print ""
         
     def fetchByte(self, signed=False):
         b = self.method[self.pc]
@@ -334,12 +353,31 @@ class IJVM(object):
 
 
 if __name__ == "__main__":
+    try:
+        args = []
+        if len(sys.argv) > 2:
+            filename = sys.argv[1]
+            args = sys.argv[2:]
+        elif len(sys.argv) == 2:
+            filename = sys.argv[1]
+        else:
+            print "What file do you want to open?"
+            filename = raw_input("Filename>> ")
+            print "Arguments to pass (seperated by spaces)"
+            args = raw_input("").split(" ")
+            
+        image = IJVMImage()
 
-    image = IJVMImage()
+        image.load(filename, convertToDecimal=False, verbose=True)
+        image.setArgs(args)
+        
+        ijvm = IJVM(image)
+        ijvm.start()
 
-    image.load("test.bc", convertToDecimal=False, verbose=True)
-    image.setArgs([2,99]) #Expected output 109
-    
-    ijvm = IJVM(image)
-    ijvm.start()
-
+        x = raw_input("Press enter to exit...")
+    except Exception as e:
+        print "------------------------------"
+        print "An error occured"
+        print "------------------------------"
+        print e
+        x = raw_input("Press enter to exit...")

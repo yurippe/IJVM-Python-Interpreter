@@ -44,7 +44,7 @@ class Operation(object):
     def setFormat(self, f):
         self.str_format = f
         return self
-        
+    
     def addByte(self, b, signed=False):
         vb = b
         if signed and b < 0:
@@ -84,22 +84,6 @@ class Operation(object):
         return self.str_format.format(self.name + " " + " ".join(self.voperations),
                lside + " ".join([self.opcode] + self.operations) + rside)                   
 
-    
-class Method_Area(object):
-
-    def __init__(self):
-        self.method_area = []
-
-    def getSize(self):
-        return len(self.method_area)
-
-class Constant_Pool(object):
-
-    def __init__(self):
-        self.constant_pool = []
-
-    def getSize(self):
-        return len(self.constant_pool)
 
 class IJVMImage(object):
 
@@ -165,7 +149,7 @@ class IJVMImage(object):
             print "\n"
 
     def setArgs(self, args):
-        self.args = args
+        self.args = [int(arg) for arg in args]
         
     def getMainIndex(self):
         return self.main_index
