@@ -337,7 +337,7 @@ if __name__ == "__main__":
 
     image = IJVMImage()
 
-    image.load("test.bc", False, True)
+    image.load("test.bc", convertToDecimal=False, verbose=True)
     image.setArgs([2,99]) #Expected output 109
     
     ijvm = IJVM(image)
