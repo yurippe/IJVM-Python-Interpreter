@@ -30,7 +30,7 @@ KEYWORDS = {"BIPUSH":OPCODE_BIPUSH, "DUP":OPCODE_DUP, "GOTO":OPCODE_GOTO, "IADD"
             "LDC_W":OPCODE_LDC_W, "NOP":OPCODE_NOP, "POP":OPCODE_POP, "SWAP":OPCODE_SWAP, "WIDE":OPCODE_WIDE
             }
 
-class IJVMError(Exception):
+class IJVMException(Exception):
     pass
 
 class Operation(object):

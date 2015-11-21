@@ -107,8 +107,8 @@ class IJVM(object):
         nargs = self.method[address] * 256 + self.method[address + 1]
         ##Raise an error if the number supplied does not correspond
         if not len(self.image.getArguments()) == nargs - 1:
-            raise IJVMError("Wrong number of arguments (main takes exactly " +
-                            str(nargs - 1) + " arguments)")
+            raise IJVMException("Wrong number of arguments (main takes exactly " +
+                                str(nargs - 1) + " arguments)")
         
         #Set everything up
         self.push(INITIAL_OBJ_REF)
