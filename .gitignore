@@ -1,6 +1,9 @@
 #Python bytecode files
 *.pyc
 
+#Windows exe files
+*.exe
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
