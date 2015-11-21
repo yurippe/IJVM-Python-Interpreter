@@ -106,12 +106,67 @@ class IJVMImage(object):
     def __init__(self):
 
         self.main_index = 0
-        self.method_area = Method_Area()
-        self.method_area_size = self.method_area.getSize()
-        self.constant_pool = Constant_Pool()
-        self.constant_pool_size = self.constant_pool.getSize()
+        self.method_area = []
+        self.method_area_size = len(self.method_area)
+        self.constant_pool = []
+        self.constant_pool_size = len(self.constant_pool)
         self.args = []
+        
+    def load(self, filename, convertToDecimal=True, verbose=False):
+        with open(filename, "r") as f:
+            content = f.read()
 
+        ci = 0
+        f1 = "main index: "
+        f2 = "\n"
+        i = content.find(f1, ci)
+        ci = content.find(f2, i)
+        self.main_index = int(content[i + len(f1):ci])
+    
+        f1 = "method area: "
+        f2 = " bytes\n"
+        i = content.find(f1, ci)
+        ci = content.find(f2, i)
+        self.method_area_size = int(content[i + len(f1):ci])
+
+        i = ci + len(f2)
+        while len(self.method_area) < self.method_area_size:
+            if convertToDecimal:
+                cont = int(content[i:i+2], base=16)
+            else:
+                cont = content[i:i+2]
+            self.method_area.append(cont)
+            i += 3
+
+        f1 = "constant pool: "
+        f2 = " words\n"
+        i = content.find(f1, i)
+        ci = content.find(f2, i)
+        self.constant_pool_size = int(content[i + len(f1):ci])
+
+        i = ci + len(f2)
+        
+        while len(self.constant_pool) < self.constant_pool_size:
+            if convertToDecimal:
+                cont = int(content[i:i+8], base=16)
+            else:
+                cont = content[i:i+8]
+            self.constant_pool.append(cont)
+            i += 9
+        if verbose:   
+            print "Main index: " + str(self.main_index)
+            print "Method area size: " + str(self.method_area_size)
+            print "Method Area: "
+            for i in range(len(self.method_area)/16 + 1):
+                print " ".join(self.method_area[i*16:(i+1)*16])
+            print "Constant pool size: " + str(self.constant_pool_size)
+            print "Constant pool: "
+            print ", ".join(self.constant_pool)
+            print "\n"
+
+    def setArgs(self, args):
+        self.args = args
+        
     def getMainIndex(self):
         return self.main_index
 
@@ -121,3 +176,8 @@ class IJVMImage(object):
         return self.constant_pool
     def getArguments(self):
         return self.args
+
+if __name__ == "__main__":
+
+    img = IJVMImage()
+    img.load("test.bc", False, True)
