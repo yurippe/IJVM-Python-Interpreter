@@ -374,7 +374,7 @@ if __name__ == "__main__":
             args = raw_input("").split(" ")
             
         image = IJVMImage()
-
+        print ""
         image.load(filename, convertToDecimal=False, verbose=True)
         image.setArgs(args)
         

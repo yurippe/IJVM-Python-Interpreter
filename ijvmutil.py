@@ -30,6 +30,13 @@ KEYWORDS = {"BIPUSH":OPCODE_BIPUSH, "DUP":OPCODE_DUP, "GOTO":OPCODE_GOTO, "IADD"
             "LDC_W":OPCODE_LDC_W, "NOP":OPCODE_NOP, "POP":OPCODE_POP, "SWAP":OPCODE_SWAP, "WIDE":OPCODE_WIDE
             }
 
+def int_overflow(val, maxint=2147483647):
+    #maxint is the UPPER BOUND (usually ((2^x)-1))
+    #default is set to a signed 32 bit int
+    if not -maxint-1 <= val <= maxint:
+        val = (val + (maxint + 1)) % (2 * (maxint + 1)) - maxint - 1
+    return val
+
 class IJVMException(Exception):
     pass
 
