@@ -41,7 +41,7 @@ def int_overflow(val, maxint=2147483647):
     #default is set to a signed 32 bit int
     if not -maxint-1 <= val <= maxint:
         val = (val + (maxint + 1)) % (2 * (maxint + 1)) - maxint - 1
-    return val
+    return int(val)
 
 class IJVMException(Exception):
     pass

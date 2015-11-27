@@ -1,13 +1,14 @@
 from ijvm import *
 
+MAX_INT = 2**3 - 1
 img = IJVMImage()
 img.load("geq.bc")
 
-startx = -2147483648
-starty = -2147483648
+startx = - MAX_INT - 1
+starty = - MAX_INT - 1
 
-maxx = 2147483647
-maxy = 2147483647
+maxx = MAX_INT
+maxy = MAX_INT
 
 x = startx
 y = starty
@@ -27,9 +28,8 @@ while x <= maxx:
             if not val == 0:
                 print "X=" + str(x) +";Y=" + str(y) + " gave: " + str(val) + " EXPECTED: 0"
 
-
+        print "X=" + str(x) + ";Y=" + str(y) + " " + str(x == y)
         y += 1
-        print "X=" + str(x) + ";Y=" + str(y)
     x += 1
     y = starty
 print "DONE"
