@@ -1,5 +1,9 @@
-ALLOW_OVERFLOWS = False
-MAX_INT = 2147483647 #Signed 32 bit integer
+#Allows values on the stack to overflow (like the C implementation) (default: True)
+ALLOW_OVERFLOWS = True
+#Maximum value of items on the stack: (default: 2147483647; Signed 32 bit integer)
+MAX_INT = 2147483647
+#Make sure the arguments we pass dont exceed MAX_INT (default: True)
+CAP_ARGS = True
 
 INITIAL_OBJ_REF = 42
 INITIAL_PC = 1

@@ -27,10 +27,12 @@ class Stack(object):
         self.stack.append(w)
 
     def __getitem__(self, key):
+        if ALLOW_OVERFLOWS: return int_overflow(self.stack[key], MAX_INT)
         return self.stack[key]
 
     def __setitem__(self, key, value):
         key = int(key)
+        if ALLOW_OVERFLOWS: value = int_overflow(value, MAX_INT)
         if key >= len(self.stack):
             self.stack.append(value)
         else:
@@ -114,6 +116,10 @@ class IJVM(object):
         self.push(INITIAL_OBJ_REF)
         #Push all arguments here
         for arg in self.image.getArguments():
+            if CAP_ARGS:
+                arg = int(arg)
+                if arg > MAX_INT: arg = MAX_INT
+                if arg < - MAX_INT - 1: arg = - MAX_INT - 1
             self.push(arg)
         
         self.invoke_virtual(self.image.getMainIndex())
