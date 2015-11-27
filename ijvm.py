@@ -129,7 +129,13 @@ class IJVM(object):
 
     def mapCustomOPCode(self, code, s):
         self.customOpKeywords[str(s).upper()] = code
-        
+
+    def simulate(self):
+        #No printing, but returns return value
+        while self.active():
+            self.execute_opcode()
+        return self.stack[self.sp]
+    
     def start(self):
         p_format = "{0} \tstack {1:>5} = {2}"
 
